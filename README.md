@@ -37,7 +37,7 @@ This project is a web-based application for diagnosing diseases in paddy leaves.
 
 1. Clone the repository:
    ```bash
-   [git clone https://github.com/GaneshGond/Paddy-Blast.git]
+   git clone https://github.com/GaneshGond/Paddy-Blast.git
    ```
 
 2. Navigate to the project directory:
