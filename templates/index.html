@@ -1,0 +1,404 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Leaf Disease Diagnosis</title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            margin: 0;
+            padding: 0;
+            background: url('/static/background.jpg') no-repeat center center fixed;
+            background-size: cover;
+            color: #2e4630;
+            text-align: center;
+        }
+
+        .container {
+            padding: 50px;
+            background: white;
+            max-width: 600px;
+            border-radius: 12px;
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.2);
+            display: inline-block;
+            margin-bottom: 0px;
+        }
+        h1 {
+            color: #3a662d;
+        }
+        p {
+            font-size: 16px;
+            color: #4a634a;
+        }
+        .image-preview {
+            width: 100%;
+            height: auto;
+            max-height: 300px;
+            margin: 15px auto;
+            border-radius: 10px;
+            border: 2px solid #b3d9b3;
+        }
+        input[type="file"] {
+            margin-top: 20px;
+            padding: 10px;
+            background-color: #e6f2e6;
+            border: 2px dashed #86b386;
+            border-radius: 8px;
+            font-size: 14px;
+            color: #2e4630;
+            cursor: pointer;
+        }
+        input[type="file"]::-webkit-file-upload-button {
+            background-color: #0d2b0d;
+            border: none;
+            padding: 5px 10px;
+            font-size: 14px;
+            color: white;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        input[type="file"]::-webkit-file-upload-button:hover {
+            background-color: #448644;
+        }
+        button {
+            margin: 15px 5px;
+            padding: 12px 24px;
+            border: none;
+            font-size: 16px;
+            color: white;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        button:first-of-type {
+            background-color: #ff4040;
+        }
+        button:first-of-type:hover {
+            background-color: #ff7979;
+        }
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 2;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgba(0, 0, 0, 0.5);
+        }
+
+        .modal-content {
+            margin-left: 20rem;
+            position: relative;
+            background-color: white;
+            margin-top: 5rem;
+            padding: 20px;
+            border-radius: 8px;
+            width: 50%;
+            text-align: center;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        }
+
+        .close {
+            position: absolute;
+            top: 10px;
+            right: 20px;
+            font-size: 24px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        .modal-body {
+            display: flex;
+            align-items: center;
+        }
+
+        #modal-image {
+            width: 300px;
+            height: 300px;
+            margin-right: 10px;
+        }
+
+        .modal-text {
+            flex: 1;
+        }
+
+        h2 {
+            margin-top: 0;
+            color: #333;
+        }
+
+        .sol {
+            font-weight: bold;
+            color: #555;
+        }
+
+        #modal-prediction, #modal-solution {
+            margin: 5px 0;
+            color: #333;
+            font-size: larger;
+        }
+        .sol {
+            display: block;
+            font-size: 1.4em;
+            margin-block-start: 0.67em;
+            margin-block-end: 0.67em;
+            font-weight: bold;
+            color: #2d662e;
+        }
+        .txt {
+            font-weight: 700;
+            color: black;
+        }
+
+        #heatmap {
+            width: 50%;
+            height: auto;
+            max-width: 500px;
+            max-height: 300px;
+            margin-top: 20px;
+        }
+
+        #confidence-graph-container {
+            margin-top: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        #confidence-graph {
+            width: 70%;
+            max-width: 500px;
+            height: auto;
+            margin-top: 20px;
+        }
+
+        .layout {
+            display: flex;
+            align-items: center;
+            gap: 0px;
+            margin-top: 5rem;
+        }
+
+        .far img {
+            height: 450px;
+            border-radius: 10px;
+            margin-top: 20rem;
+        }
+
+        .error-box {
+            display: none;
+            margin: 20px auto;
+            padding: 15px;
+            max-width: 500px;
+            border: 2px solid #ff4c4c;
+            background-color: #ffe6e6;
+            color: #a30000;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: bold;
+            text-align: center;
+        }
+
+        .error-box.visible {
+            display: block;
+        }
+        #non-paddy-alert {
+    display: none;
+    position: fixed;
+    z-index: 3;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    overflow: auto;
+    background-color: rgba(0, 0, 0, 0.6);
+}
+
+#non-paddy-alert .modal-content {
+    position: relative;
+    background-color: white;
+    margin: 10% auto;
+    padding: 20px;
+    border-radius: 10px;
+    width: 50%;
+    text-align: center;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+}
+
+#non-paddy-alert h2 {
+    color: #ff4c4c;
+    font-size: 24px;
+    margin-bottom: 10px;
+}
+
+#non-paddy-alert p {
+    color: #333;
+    font-size: 18px;
+}
+
+
+    </style>
+</head>
+<body>
+    <div class="layout">
+        <div class="far">
+            <img src="/static/far.png" alt="Far Image" />
+        </div>
+        <div class="container">
+            <h1>Paddy Leaf Disease Diagnosis</h1>
+            <p>Upload an image of a leaf to get a diagnosis:</p>
+            <input type="file" id="file-input" accept="image/*">
+            <button onclick="uploadImage()">Analyze</button>
+            <img id="image-preview" class="image-preview" src="#" alt="" style="display: none;">
+            <!-- Error Box -->
+            <div id="error-box" class="error-box">
+                Please select an image.
+            </div>
+        </div>
+    </div>
+    <!-- Modal for results -->
+    <div id="result-modal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeModal()">&times;</span>
+            <div class="modal-body">
+                <!-- Image on the left -->
+                <img id="modal-image" src="/static/man.png" alt="Diagnosis Image" />
+                
+                <!-- Content on the right -->
+                <div class="modal-text">
+                    <h1>Diagnosis Result</h1>
+                    <p class="sol">Prediction:</p>
+                    <p id="modal-prediction" class="txt"></p>
+                    <div id="heatmap-container">
+                        <img id="heatmap" src="" alt="Heatmap">
+                    </div>
+                    <div id="confidence-graph-container">
+                        <img id="confidence-graph" src="" alt="Confidence Graph">
+                    </div>
+                    <button onclick="showSolution()">Show Solution</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="non-paddy-alert" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeNonPaddyAlert()">&times;</span>
+            <h2>Invalid Image</h2>
+            <p>This is not a paddy leaf. Please upload a valid image.</p>
+        </div>
+    </div>
+
+
+
+     <!-- Solution Modal -->
+     <div id="solution-modal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeSolutionModal()">&times;</span>
+            <h2>Solution</h2>
+            <!-- Render the solution HTML dynamically here -->
+            <div id="solution-text"></div>
+        </div>
+    </div>
+
+    <!-- Add a custom popup for error messages -->
+    <div id="error-popup" class="modal">
+        <div class="modal-content" style="text-align: center;">
+            <span class="close" onclick="closeErrorPopup()">&times;</span>
+            <h2>Upload Error</h2>
+            <p>Please select a file before clicking "Analyze".</p>
+        </div>
+    </div>
+
+    <script>
+       function uploadImage() {
+    const fileInput = document.getElementById('file-input');
+    const errorBox = document.getElementById('error-box');
+
+    if (!fileInput.files[0]) {
+        // Show the error box
+        errorBox.classList.add('visible');
+        return;
+    }
+
+    // Hide the error box if input is valid
+    errorBox.classList.remove('visible');
+
+    const formData = new FormData();
+    formData.append('file', fileInput.files[0]);
+    fetch('/upload', { method: 'POST', body: formData })
+        .then(response => response.json())
+        .then(data => {
+            if (data.error) {
+                alert(data.error);
+            } else if (data.is_paddy === false) {
+                showNonPaddyAlert();
+            } else {
+                showModal(data.prediction, data.confidence, data.solution, data.heatmap, data.confidence_graph);
+            }
+        })
+        .catch(error => console.error(error));
+}
+
+function showNonPaddyAlert() {
+    const alert = document.getElementById('non-paddy-alert');
+    alert.style.display = 'flex';
+}
+
+function closeNonPaddyAlert() {
+    const alert = document.getElementById('non-paddy-alert');
+    alert.style.display = 'none';
+}
+
+function showNonPaddyPopup() {
+    const popup = document.getElementById('non-paddy-popup');
+    popup.style.display = 'flex';
+}
+
+function closeNonPaddyPopup() {
+    const popup = document.getElementById('non-paddy-popup');
+    popup.style.display = 'none';
+}
+        function showErrorPopup() {
+            const popup = document.getElementById('error-popup');
+            popup.style.display = 'flex';
+            setTimeout(() => {
+                popup.style.display = 'none';
+            }, 3000);
+        }
+
+        function closeErrorPopup() {
+            const popup = document.getElementById('error-popup');
+            popup.style.display = 'none';
+        }
+
+        function closeModal() {
+            document.getElementById('result-modal').style.display = 'none';
+        }
+
+        function showModal(prediction, confidence, solution, heatmap, confidenceGraph) {
+            document.getElementById("modal-prediction").innerText = prediction;
+            document.getElementById("heatmap").src = 'data:image/png;base64,' + heatmap;
+            document.getElementById("confidence-graph").src = 'data:image/png;base64,' + confidenceGraph;
+            document.getElementById("result-modal").style.display = "block";
+            document.getElementById("solution-text").innerHTML = solution;
+        }
+
+        function showSolution() {
+            document.getElementById("result-modal").style.display = "none";
+            document.getElementById("solution-modal").style.display = "block";
+        }
+
+        function closeSolutionModal() {
+            document.getElementById('solution-modal').style.display = 'none';
+        }
+    
+
+    </script>
+</body>
+</html>
+
